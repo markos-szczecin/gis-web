@@ -3,3 +3,4 @@
 /backend/app/__pycache__/
 build/
 **/__*
+database/*.json
