@@ -4,3 +4,5 @@
 build/
 **/__*
 database/*.json
+backend/__zdarzenie_fetch.py
+backend/tmp/
