@@ -114,7 +114,7 @@ export function setupClusterClick(map: Map, layer: VectorLayer): void {
         map.addLayer(flashLayer);
       });
   });
-  
+
   map.on("singleclick", (evt) => {
     map.forEachFeatureAtPixel(
       evt.pixel,
@@ -127,6 +127,7 @@ export function setupClusterClick(map: Map, layer: VectorLayer): void {
           const geom = f.getGeometry();
           if (geom) extendExtent(extent, geom.getExtent());
         }
+        
         if (isEmpty(extent)) return;
 
         map.getView().fit(extent, { duration: 500, padding: [60, 60, 60, 60] });
