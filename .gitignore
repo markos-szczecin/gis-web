@@ -6,5 +6,5 @@ build/
 database/*.json
 backend/__zdarzenie_fetch.py
 backend/tmp/
-.DS_Store/
+.DS_Store
 .vscode/
