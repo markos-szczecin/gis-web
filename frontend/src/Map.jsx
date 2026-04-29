@@ -5,23 +5,23 @@ import TileLayer from "ol/layer/Tile";
 import OSM from "ol/source/OSM";
 import "ol/ol.css";
 import { fromLonLat } from "ol/proj";
-import { createAccidentsLayer } from "./layers/accidents";
+import { createAccidentsLayer, setupClusterClick } from "./layers/accidents";
 
 export default function MapView() {
   const containerRef = useRef(null);
 
   useEffect(() => {
+    const accidentsLayer = createAccidentsLayer();
     const map = new Map({
       target: containerRef.current,
-      layers: [
-        new TileLayer({ source: new OSM() }),
-        createAccidentsLayer(),
-      ],
+      layers: [new TileLayer({ source: new OSM() }), accidentsLayer],
       view: new View({
         center: fromLonLat([14.556684989118507, 53.42750347047982]),
         zoom: 12,
       }),
     });
+
+    setupClusterClick(map, accidentsLayer);
 
     return () => map.setTarget(null);
   }, []);
