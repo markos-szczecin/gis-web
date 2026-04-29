@@ -9,3 +9,5 @@ pyproj
 python-dotenv
 redis
 pydantic
+requests
+psycopg2

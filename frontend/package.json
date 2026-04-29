@@ -4,11 +4,13 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
+    "axios": "latest",
+    "ol": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "ol": "latest",
-    "axios": "latest"
+    "vite": "latest"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
 }
