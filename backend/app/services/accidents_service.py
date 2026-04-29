@@ -1,12 +1,17 @@
 from datetime import date
 import json
+from typing import Optional
 from app.db.connection import get_cursor
 
 
 def get_base_accidents_geojson(
-    minDate: date = date(date.today().year, 1, 1),
-    maxDate: date = date(date.today().year, 12, 31),
+    minDate: Optional[date] = None,
+    maxDate: Optional[date] = None,
 ) -> dict:
+    if minDate is None:
+        minDate = date(date.today().year, 1, 1)
+    if maxDate is None:
+        maxDate = date(date.today().year, 12, 31)
     query = """
         SELECT
             id,

@@ -31,7 +31,10 @@ function clusterStyle(feature: FeatureLike): Style {
   return styleCache[size];
 }
 
-export function createAccidentsLayer(): VectorLayer {
+export function createAccidentsLayer(): {
+  layer: VectorLayer;
+  loadData: (minDate: string, maxDate: string) => void;
+} {
   const accidentsSource = new VectorSource();
 
   const clusterSource = new Cluster({
@@ -39,20 +42,25 @@ export function createAccidentsLayer(): VectorLayer {
     source: accidentsSource,
   });
 
-  fetchAccidents()
-    .then((geojson) => {
-      const features = new GeoJSON().readFeatures(geojson, {
-        featureProjection: "EPSG:3857",
-      });
-      accidentsSource.addFeatures(features);
-    })
-    .catch((err: Error) => console.error("Failed to load accidents:", err));
+  const loadData = (minDate: string, maxDate: string) => {
+    accidentsSource.clear();
+    fetchAccidents(minDate, maxDate)
+      .then((geojson: object) => {
+        const features = new GeoJSON().readFeatures(geojson, {
+          featureProjection: "EPSG:3857",
+        });
+        accidentsSource.addFeatures(features);
+      })
+      .catch((err: Error) => console.error("Failed to load accidents:", err));
+  };
 
-  return new VectorLayer({
+  const layer = new VectorLayer({
     source: clusterSource,
     visible: true,
     style: clusterStyle,
   });
+
+  return { layer, loadData };
 }
 
 export function setupClusterClick(map: Map, layer: VectorLayer): void {

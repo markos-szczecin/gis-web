@@ -61,7 +61,7 @@ function FilterGroup({ group }) {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ minDate, maxDate, onMinDateChange, onMaxDateChange }) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -70,6 +70,26 @@ export default function Sidebar() {
         <div style={styles.header}>
           Filters
           <button style={styles.collapseBtn} onClick={() => setCollapsed(true)} title="Hide sidebar">◀</button>
+        </div>
+        <div style={styles.dateSection}>
+          <label style={styles.dateLabel}>
+            From
+            <input
+              type="date"
+              value={minDate}
+              onChange={(e) => onMinDateChange(e.target.value)}
+              style={styles.dateInput}
+            />
+          </label>
+          <label style={styles.dateLabel}>
+            To
+            <input
+              type="date"
+              value={maxDate}
+              onChange={(e) => onMaxDateChange(e.target.value)}
+              style={styles.dateInput}
+            />
+          </label>
         </div>
         {FILTER_GROUPS.map((group) => (
           <FilterGroup key={group.id} group={group} />
@@ -139,6 +159,31 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
+  },
+  dateSection: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    padding: "12px 16px",
+    borderBottom: "1px solid #313244",
+  },
+  dateLabel: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+    color: "#a6adc8",
+  },
+  dateInput: {
+    background: "#313244",
+    border: "1px solid #45475a",
+    borderRadius: 4,
+    color: "#cdd6f4",
+    padding: "4px 8px",
+    fontSize: 13,
+    colorScheme: "dark",
   },
   group: {
     borderBottom: "1px solid #313244",
