@@ -31,17 +31,18 @@ export default function AccidentDetailsModal({ id, onClose }) {
 }
 
 function DetailRows({ details }) {
+  
   const rows = [
     ["Date", details.event_date],
     ["Time", details.event_time],
     ["Severity", details.severity],
     ["Description", details.description],
-    ["Day / Night", details.day_night],
-    ["Traffic light", details.traffic_light ? "Yes" : "No"],
-    ["Place", details.place],
-    ["Crossroad", details.crossroad ? "Yes" : "No"],
-    ["Urban", details.urban ? "Yes" : "No"],
-    ["Road type", details.road_type],
+    ["Day / Night", details.day_night !== null ? (details.day_night ? "Night" : "Day") : "—"],
+    ["Traffic light", details.traffic_light !== null ? (details.traffic_light ? "Yes" : "No") : "— "],
+    ["Place", details.place || "—"],
+    ["Crossroad", details.crossroad !== null ? (details.crossroad ? "Yes" : "No") : "— "],
+    ["Urban", details.urban !== null ? (details.urban ? "Yes" : "No") : "— "],
+    ["Road type", details.road_type || "—"],
   ];
 
   return (
