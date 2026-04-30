@@ -10,6 +10,7 @@ import { extend as extendExtent, createEmpty, isEmpty } from "ol/extent";
 import type { Extent } from "ol/extent";
 import type Map from "ol/Map";
 import { fetchAccidents } from "../services/accidentsService";
+import { maxZoomLevel } from "../config/config";
 
 const styleCache: Record<number, Style> = {};
 
@@ -56,6 +57,7 @@ export function createAccidentsLayer(): {
 
   const layer = new VectorLayer({
     source: clusterSource,
+    maxZoom: maxZoomLevel,
     visible: true,
     style: clusterStyle,
   });
@@ -63,7 +65,18 @@ export function createAccidentsLayer(): {
   return { layer, loadData };
 }
 
-export function setupClusterClick(map: Map, layer: VectorLayer): void {
+export interface AccidentSummary {
+  id: string;
+  event_date?: string;
+  severity?: string;
+}
+
+export function setupClusterClick(
+  map: Map,
+  layer: VectorLayer,
+  onSingleSelect: (id: string) => void,
+  onMultiSelect: (items: AccidentSummary[]) => void,
+): void {
   const getFlashSourceLayer = (extent: Extent): VectorLayer => {
     const flashSource = new VectorSource({
       features: [new Feature(fromExtent(extent))],
@@ -88,6 +101,10 @@ export function setupClusterClick(map: Map, layer: VectorLayer): void {
   };
 
   map.on('pointermove', (evt) => {
+    const hit = map.hasFeatureAtPixel(evt.pixel);
+    
+    map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+
     map.forEachFeatureAtPixel(
       evt.pixel,
       (feature) => {
@@ -128,19 +145,34 @@ export function setupClusterClick(map: Map, layer: VectorLayer): void {
       evt.pixel,
       (feature) => {
         const subFeatures = feature.get("features") as FeatureLike[];
-        if (!subFeatures || subFeatures.length <= 1) return;
+        if (!subFeatures || subFeatures.length === 0) return;
+
+        if (subFeatures.length === 1) {
+          console.log("Single accident selected:", subFeatures[0].get("id"));
+          onSingleSelect(subFeatures[0].get("id") as string);
+          return true;
+        }
+
+        const atMaxZoom = (map.getView().getZoom() ?? 0) >= maxZoomLevel;
+        if (atMaxZoom) {
+          onMultiSelect(subFeatures.map((f) => ({
+            id: f.get("id") as string,
+            event_date: f.get("event_date") as string | undefined,
+            event_time: f.get("event_time") as string | undefined,
+            severity: f.get("severity") as string | undefined,
+          })));
+          return true;
+        }
 
         const extent: Extent = createEmpty();
         for (const f of subFeatures) {
           const geom = f.getGeometry();
           if (geom) extendExtent(extent, geom.getExtent());
         }
-        
         if (isEmpty(extent)) return;
 
-        map.getView().fit(extent, { duration: 500, padding: [60, 60, 60, 60] });
+        map.getView().fit(extent, { maxZoom: maxZoomLevel, duration: 500, padding: [60, 60, 60, 60] });
         removeFlashLayer();
-
         return true;
       },
       { layerFilter: (l) => l === layer }

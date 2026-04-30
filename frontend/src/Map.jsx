@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Map from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
@@ -6,10 +6,16 @@ import OSM from "ol/source/OSM";
 import "ol/ol.css";
 import { fromLonLat } from "ol/proj";
 import { createAccidentsLayer, setupClusterClick } from "./layers/accidents";
+import { extentConstraints, maxZoomLevel, mapCenter, defaultZoom } from "./config/config";
+import AccidentDetailsModal from "./components/AccidentDetailsModal";
+import AccidentListModal from "./components/AccidentListModal";
 
 export default function MapView({ minDate, maxDate }) {
   const containerRef = useRef(null);
   const loadDataRef = useRef(null);
+  const [modal, setModal] = useState(null);
+
+  const closeModal = () => setModal(null);
 
   useEffect(() => {
     const { layer, loadData } = createAccidentsLayer();
@@ -17,14 +23,21 @@ export default function MapView({ minDate, maxDate }) {
 
     const map = new Map({
       target: containerRef.current,
-      layers: [new TileLayer({ source: new OSM() }), layer],
+      layers: [new TileLayer({source: new OSM() }), layer],
       view: new View({
-        center: fromLonLat([14.556684989118507, 53.42750347047982]),
-        zoom: 12,
+        center: fromLonLat(mapCenter),
+        zoom: defaultZoom,
+        maxZoom: maxZoomLevel,
+        extent: fromLonLat(extentConstraints[0]).concat(fromLonLat(extentConstraints[1])),
       }),
     });
 
-    setupClusterClick(map, layer);
+    setupClusterClick(
+      map,
+      layer,
+      (id) => setModal({ type: "details", id }),
+      (items) => setModal({ type: "list", items }),
+    );
 
     return () => map.setTarget(null);
   }, []);
@@ -35,5 +48,19 @@ export default function MapView({ minDate, maxDate }) {
     }
   }, [minDate, maxDate]);
 
-  return <div ref={containerRef} style={{ width: "100%", height: "100vh" }} />;
+  return (
+    <>
+      <div ref={containerRef} style={{ width: "100%", height: "100vh" }} />
+      {modal?.type === "details" && (
+        <AccidentDetailsModal id={modal.id} onClose={closeModal} />
+      )}
+      {modal?.type === "list" && (
+        <AccidentListModal
+          items={modal.items}
+          onSelect={(id) => setModal({ type: "details", id })}
+          onClose={closeModal}
+        />
+      )}
+    </>
+  );
 }

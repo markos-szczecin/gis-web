@@ -9,7 +9,8 @@
     "allowImportingTsExtensions": true,
     "allowJs": true,
     "jsx": "react-jsx",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["vite/client"]
   },
   "include": ["src"]
 }
