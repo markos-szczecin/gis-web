@@ -68,6 +68,7 @@ export function createAccidentsLayer(): {
 export interface AccidentSummary {
   id: string;
   event_date?: string;
+  event_time?: string;
   severity?: string;
 }
 

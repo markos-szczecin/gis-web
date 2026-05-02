@@ -6,9 +6,14 @@ sqlalchemy
 geoalchemy2
 geopandas
 shapely
+pandas
+meteostat
 pyproj
 python-dotenv
 redis
 pydantic
 requests
 psycopg2
+openmeteo-requests
+requests-cache
+retry-requests

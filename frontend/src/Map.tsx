@@ -5,15 +5,25 @@ import TileLayer from "ol/layer/Tile";
 import OSM from "ol/source/OSM";
 import "ol/ol.css";
 import { fromLonLat } from "ol/proj";
-import { createAccidentsLayer, setupClusterClick } from "./layers/accidents";
+import { createAccidentsLayer, setupClusterClick, type AccidentSummary } from "./layers/accidents";
 import { extentConstraints, maxZoomLevel, mapCenter, defaultZoom } from "./config/config";
 import AccidentDetailsModal from "./components/AccidentDetailsModal";
 import AccidentListModal from "./components/AccidentListModal";
 
-export default function MapView({ minDate, maxDate }) {
-  const containerRef = useRef(null);
-  const loadDataRef = useRef(null);
-  const [modal, setModal] = useState(null);
+interface Props {
+  minDate: string;
+  maxDate: string;
+}
+
+type ModalState =
+  | { type: "details"; id: string }
+  | { type: "list"; items: AccidentSummary[] }
+  | null;
+
+export default function MapView({ minDate, maxDate }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const loadDataRef = useRef<((minDate: string, maxDate: string) => void) | null>(null);
+  const [modal, setModal] = useState<ModalState>(null);
 
   const closeModal = () => setModal(null);
 
@@ -22,8 +32,8 @@ export default function MapView({ minDate, maxDate }) {
     loadDataRef.current = loadData;
 
     const map = new Map({
-      target: containerRef.current,
-      layers: [new TileLayer({source: new OSM() }), layer],
+      target: containerRef.current!,
+      layers: [new TileLayer({ source: new OSM() }), layer],
       view: new View({
         center: fromLonLat(mapCenter),
         zoom: defaultZoom,
@@ -39,7 +49,7 @@ export default function MapView({ minDate, maxDate }) {
       (items) => setModal({ type: "list", items }),
     );
 
-    return () => map.setTarget(null);
+    return () => map.setTarget(undefined);
   }, []);
 
   useEffect(() => {

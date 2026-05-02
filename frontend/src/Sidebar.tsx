@@ -1,6 +1,18 @@
 import { useState } from "react";
+import type { CSSProperties } from "react";
 
-const FILTER_GROUPS = [
+interface Filter {
+  id: string;
+  label: string;
+}
+
+interface FilterGroupData {
+  id: string;
+  label: string;
+  filters: Filter[];
+}
+
+const FILTER_GROUPS: FilterGroupData[] = [
   {
     id: "group-a",
     label: "Group A",
@@ -30,11 +42,11 @@ const FILTER_GROUPS = [
   },
 ];
 
-function FilterGroup({ group }) {
+function FilterGroup({ group }: { group: FilterGroupData }) {
   const [open, setOpen] = useState(true);
-  const [checked, setChecked] = useState({});
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
 
-  const toggle = (id) => setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
+  const toggle = (id: string) => setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
 
   return (
     <div style={styles.group}>
@@ -61,7 +73,14 @@ function FilterGroup({ group }) {
   );
 }
 
-export default function Sidebar({ minDate, maxDate, onMinDateChange, onMaxDateChange }) {
+interface SidebarProps {
+  minDate: string;
+  maxDate: string;
+  onMinDateChange: (value: string) => void;
+  onMaxDateChange: (value: string) => void;
+}
+
+export default function Sidebar({ minDate, maxDate, onMinDateChange, onMaxDateChange }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -102,7 +121,7 @@ export default function Sidebar({ minDate, maxDate, onMinDateChange, onMaxDateCh
   );
 }
 
-const styles = {
+const styles: Record<string, CSSProperties> = {
   wrapper: {
     position: "absolute",
     zIndex: 9999,
@@ -187,7 +206,6 @@ const styles = {
   },
   group: {
     borderBottom: "1px solid #313244",
-    // position: "absolute",
   },
   groupHeader: {
     width: "100%",

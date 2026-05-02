@@ -1,16 +1,21 @@
 import { useEffect, useState } from "react";
-import { fetchAccidentDetails } from "../services/accidentsService";
+import { fetchAccidentDetails, type AccidentDetails } from "../services/accidentsService";
 
-export default function AccidentDetailsModal({ id, onClose }) {
-  const [details, setDetails] = useState(null);
-  const [error, setError] = useState(null);
+interface Props {
+  id: string;
+  onClose: () => void;
+}
+
+export default function AccidentDetailsModal({ id, onClose }: Props) {
+  const [details, setDetails] = useState<AccidentDetails | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setDetails(null);
     setError(null);
     fetchAccidentDetails(id)
       .then(setDetails)
-      .catch((err) => setError(err.message));
+      .catch((err: Error) => setError(err.message));
   }, [id]);
 
   return (
@@ -30,18 +35,18 @@ export default function AccidentDetailsModal({ id, onClose }) {
   );
 }
 
-function DetailRows({ details }) {
+function DetailRows({ details }: { details: AccidentDetails }) {
   
-  const rows = [
+  const rows: [string, string][] = [
     ["Date", details.event_date],
     ["Time", details.event_time],
     ["Severity", details.severity],
     ["Description", details.description],
     ["Day / Night", details.day_night !== null ? (details.day_night ? "Night" : "Day") : "—"],
-    ["Traffic light", details.traffic_light !== null ? (details.traffic_light ? "Yes" : "No") : "— "],
+    ["Traffic light", details.traffic_light !== null ? (details.traffic_light ? "Yes" : "No") : "—"],
     ["Place", details.place || "—"],
-    ["Crossroad", details.crossroad !== null ? (details.crossroad ? "Yes" : "No") : "— "],
-    ["Urban", details.urban !== null ? (details.urban ? "Yes" : "No") : "— "],
+    ["Crossroad", details.crossroad !== null ? (details.crossroad ? "Yes" : "No") : "—"],
+    ["Urban", details.urban !== null ? (details.urban ? "Yes" : "No") : "—"],
     ["Road type", details.road_type || "—"],
   ];
 
@@ -59,7 +64,7 @@ function DetailRows({ details }) {
   );
 }
 
-const styles = {
+const styles: Record<string, React.CSSProperties> = {
   overlay: {
     position: "fixed",
     inset: 0,

@@ -1,5 +1,13 @@
-export default function AccidentListModal({ items, onSelect, onClose }) {
-  console.log("AccidentListModal rendered with items:", items);
+import type { CSSProperties } from "react";
+import type { AccidentSummary } from "../layers/accidents";
+
+interface Props {
+  items: AccidentSummary[];
+  onSelect: (id: string) => void;
+  onClose: () => void;
+}
+
+export default function AccidentListModal({ items, onSelect, onClose }: Props) {
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -21,17 +29,17 @@ export default function AccidentListModal({ items, onSelect, onClose }) {
   );
 }
 
-function severityStyle(severity) {
-  const colors = {
+function severityStyle(severity: string): CSSProperties {
+  const colors: Record<string, string> = {
     fatal: "#f38ba8",
     serious: "#fab387",
     slight: "#a6e3a1",
   };
-  const color = colors[severity?.toLowerCase()] ?? "#cdd6f4";
+  const color = colors[severity.toLowerCase()] ?? "#cdd6f4";
   return { ...styles.badge, color, borderColor: color };
 }
 
-const styles = {
+const styles: Record<string, CSSProperties> = {
   overlay: {
     position: "fixed",
     inset: 0,
@@ -90,6 +98,7 @@ const styles = {
   date: {
     flex: 1,
   },
+  time: {},
   badge: {
     fontSize: 11,
     fontWeight: 600,
