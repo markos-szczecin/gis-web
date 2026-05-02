@@ -9,3 +9,4 @@ backend/tmp/
 .DS_Store
 .vscode/
 /backend/data/
+.cache_sqlite
