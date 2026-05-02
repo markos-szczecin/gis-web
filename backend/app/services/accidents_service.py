@@ -1,7 +1,9 @@
 from datetime import date
-import json
 from typing import Optional
-from app.db.connection import get_cursor
+
+from app.repositories.accidents_repository import AccidentsRepository
+
+_repository = AccidentsRepository()
 
 
 def get_base_accidents_geojson(
@@ -12,78 +14,43 @@ def get_base_accidents_geojson(
         minDate = date(date.today().year, 1, 1)
     if maxDate is None:
         maxDate = date(date.today().year, 12, 31)
-    query = """
-        SELECT
-            id,
-            event_date,
-            event_time,
-            severity,
-            ST_AsGeoJSON(loc)::json AS geometry
-        FROM accidents
-        WHERE event_date >= %s AND event_date <= %s
-        ORDER BY event_date DESC
-    """
-    dates = (minDate.strftime("%Y-%m-%d"), maxDate.strftime("%Y-%m-%d"))
 
-
-    with get_cursor() as cur:
-        cur.execute(query, dates)
-        rows = cur.fetchall()
+    accidents = _repository.find_in_date_range(minDate, maxDate)
 
     features = [
         {
             "type": "Feature",
-            "geometry": row["geometry"],
+            "geometry": accident.geometry,
             "properties": {
-                "id": row["id"],
-                "event_date": row["event_date"].isoformat() if row["event_date"] else None,
-                "event_time": row["event_time"] if row["event_time"] else None,
-                "severity": row["severity"],
+                "id": accident.id,
+                "event_date": accident.event_date.isoformat() if accident.event_date else None,
+                "event_time": accident.event_time if accident.event_time else None,
+                "severity": accident.severity,
             },
         }
-        for row in rows
+        for accident in accidents
     ]
 
     return {"type": "FeatureCollection", "features": features}
 
 
 def get_accident_details(accident_id: str) -> dict:
-    query = """
-        SELECT
-            id,
-            event_date,
-            event_time,
-            severity,
-            description,
-            day_night,
-            traffic_light,
-            place,
-            crossroad,
-            urban,
-            road_type,
-            ST_AsGeoJSON(loc)::json AS geometry
-        FROM accidents
-        WHERE id = %s
-    """
+    accident = _repository.find_by_id(accident_id)
 
-    with get_cursor() as cur:
-        cur.execute(query, (accident_id,))
-        row = cur.fetchone()
-
-    if not row:
+    if not accident:
         raise ValueError(f"Accident with ID {accident_id} not found")
 
     return {
-        "id": row["id"],
-        "event_date": row["event_date"].isoformat(),
-        "event_time": row["event_time"].isoformat(),
-        "description": row["description"],
-        "day_night": row["day_night"],
-        "traffic_light": row["traffic_light"],
-        "place": row["place"],
-        "crossroad": row["crossroad"],
-        "urban": row["urban"],
-        "road_type": row["road_type"],
-        "severity": row["severity"],
-        "geometry": row["geometry"],
+        "id": accident.id,
+        "event_date": accident.event_date.isoformat(),
+        "event_time": accident.event_time.isoformat(),
+        "description": accident.description,
+        "day_night": accident.day_night,
+        "traffic_light": accident.traffic_light,
+        "place": accident.place,
+        "crossroad": accident.crossroad,
+        "urban": accident.urban,
+        "road_type": accident.road_type,
+        "severity": accident.severity,
+        "geometry": accident.geometry,
     }
