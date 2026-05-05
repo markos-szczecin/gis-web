@@ -45,7 +45,6 @@ def get_accident_details(accident_id: str) -> dict:
         "event_date": accident.event_date.isoformat(),
         "event_time": accident.event_time.isoformat(),
         "description": accident.description,
-        "day_night": accident.day_night,
         "traffic_light": accident.traffic_light,
         "place": accident.place,
         "crossroad": accident.crossroad,

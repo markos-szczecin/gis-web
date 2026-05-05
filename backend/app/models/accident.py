@@ -10,7 +10,6 @@ class Accident:
     event_time: Optional[time]
     severity: Optional[str]
     description: Optional[str]
-    day_night: Optional[str]
     traffic_light: Optional[bool]
     place: Optional[str]
     crossroad: Optional[bool]

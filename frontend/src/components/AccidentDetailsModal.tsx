@@ -42,7 +42,7 @@ function DetailRows({ details }: { details: AccidentDetails }) {
     ["Time", details.event_time],
     ["Severity", details.severity],
     ["Description", details.description],
-    ["Day / Night", details.day_night !== null ? (details.day_night ? "Night" : "Day") : "—"],
+    ["Day / Night", "—"],
     ["Traffic light", details.traffic_light !== null ? (details.traffic_light ? "Yes" : "No") : "—"],
     ["Place", details.place || "—"],
     ["Crossroad", details.crossroad !== null ? (details.crossroad ? "Yes" : "No") : "—"],
