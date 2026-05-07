@@ -15,4 +15,5 @@ class Accident:
     crossroad: Optional[bool]
     urban: Optional[bool]
     road_type: Optional[str]
+    day_night: Optional[bool]
     geometry: dict

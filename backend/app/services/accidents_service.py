@@ -52,4 +52,5 @@ def get_accident_details(accident_id: str) -> dict:
         "road_type": accident.road_type,
         "severity": accident.severity,
         "geometry": accident.geometry,
+        "day_night": accident.day_night
     }

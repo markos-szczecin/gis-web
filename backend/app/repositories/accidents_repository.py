@@ -35,6 +35,7 @@ class AccidentsRepository:
                 urban=None,
                 road_type=None,
                 geometry=row["geometry"],
+                day_night=None
             )
             for row in rows
         ]
@@ -42,7 +43,7 @@ class AccidentsRepository:
     def find_by_id(self, accident_id: str) -> Optional[Accident]:
         query = """
             SELECT
-                id,
+                a.id,
                 event_date,
                 event_time,
                 severity,
@@ -52,9 +53,11 @@ class AccidentsRepository:
                 crossroad,
                 urban,
                 road_type,
-                ST_AsGeoJSON(loc)::json AS geometry
-            FROM accidents
-            WHERE id = %s
+                ST_AsGeoJSON(loc)::json AS geometry,
+                wa.is_day
+            FROM accidents a
+            LEFT JOIN weather_accident wa ON a.id = wa.accident_id
+            WHERE a.id = %s
         """
         with get_cursor() as cur:
             cur.execute(query, (accident_id,))
@@ -75,4 +78,5 @@ class AccidentsRepository:
             urban=row["urban"],
             road_type=row["road_type"],
             geometry=row["geometry"],
+            day_night=row["is_day"]
         )
