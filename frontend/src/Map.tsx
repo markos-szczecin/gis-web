@@ -16,6 +16,7 @@ import { extentConstraints, maxZoomLevel, mapCenter, defaultZoom } from "./confi
 import { type WeatherParams } from "./config/weatherConfig";
 import AccidentDetailsModal from "./components/AccidentDetailsModal";
 import AccidentListModal from "./components/AccidentListModal";
+import "./Map.css";
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.matchMedia("(max-width: 768px)").matches);
@@ -183,43 +184,43 @@ export default function MapView({ minDate, maxDate, activeLayer, riskGridTime, w
   };
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100vh" }}>
-      <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
+    <div className="map-container">
+      <div ref={containerRef} className="map-inner" />
 
-      <div style={{ ...layerInfo, ...(isMobile ? { maxWidth: 160, top: 8, right: 8, padding: "8px 10px" } : {}) }}>
-        <div style={layerInfoTitle}>{LAYER_LABELS[activeLayer]}</div>
-        <div style={layerInfoBody}>{LAYER_DESCRIPTIONS[activeLayer]}</div>
-      {activeLayer === "riskGrid" && (
-        <div style={toolbar}>
-          {!drawActive && !hasPolygon && (
-            <button style={mapBtnDraw} onClick={handleDrawAreaClick}>Draw area</button>
-          )}
-          {drawActive && (
-            <button style={{ ...mapBtn, ...mapBtnCancel }} onClick={cancelDraw}>Cancel</button>
-          )}
-          {!drawActive && hasPolygon && (
-            <>
-              <button style={mapBtn} onClick={startDraw}>Redraw</button>
-              <button style={{ ...mapBtn, ...mapBtnClear }} onClick={clearPolygon}>Clear area</button>
-            </>
-          )}
-        </div>
-      )}
+      <div className={`layer-info${isMobile ? " layer-info--mobile" : ""}`}>
+        <div className="layer-info__title">{LAYER_LABELS[activeLayer]}</div>
+        <div className="layer-info__body">{LAYER_DESCRIPTIONS[activeLayer]}</div>
+        {activeLayer === "riskGrid" && (
+          <div className="map-toolbar">
+            {!drawActive && !hasPolygon && (
+              <button className="map-btn map-btn--draw" onClick={handleDrawAreaClick}>Draw area</button>
+            )}
+            {drawActive && (
+              <button className="map-btn map-btn--cancel" onClick={cancelDraw}>Cancel</button>
+            )}
+            {!drawActive && hasPolygon && (
+              <>
+                <button className="map-btn" onClick={startDraw}>Redraw</button>
+                <button className="map-btn map-btn--clear" onClick={clearPolygon}>Clear area</button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {showDrawHint && (
-        <div style={hintOverlay}>
-          <div style={{ ...hintBox, ...(isMobile ? { maxWidth: "calc(100vw - 32px)", padding: "20px 16px" } : {}) }}>
-            <div style={hintTitle}>Draw Area Filter</div>
-            <p style={hintBody}>
+        <div className="hint-overlay">
+          <div className={`hint-box${isMobile ? " hint-box--mobile" : ""}`}>
+            <div className="hint-box__title">Draw Area Filter</div>
+            <p className="hint-box__body">
               Draw a polygon directly on the map to focus the risk heatmap on a specific area.
               Only cells inside the polygon will be coloured; the colour scale resets to the local maximum so subtle differences become visible.
             </p>
-            <p style={hintBody}>
+            <p className="hint-box__body">
               <strong>How to use:</strong> click to place vertices, double-click to close the polygon.
               Use <em>Redraw</em> to start over or <em>Clear area</em> to remove the filter.
             </p>
-            <button style={hintBtn} onClick={dismissDrawHint}>Got it — start drawing</button>
+            <button className="hint-box__btn" onClick={dismissDrawHint}>Got it — start drawing</button>
           </div>
         </div>
       )}
@@ -246,121 +247,4 @@ const LAYER_LABELS: Record<string, string> = {
 const LAYER_DESCRIPTIONS: Record<string, string> = {
   accidents: "Displays recorded road accidents as clusters. Click a cluster to zoom in or view individual accident details.",
   riskGrid: "ML-powered risk heatmap. Set the date, time window, and weather conditions, then load to see where accidents are most likely to occur. Use Draw area to focus the heatmap on a specific zone.",
-};
-
-const layerInfo: React.CSSProperties = {
-  position: "absolute",
-  top: 12,
-  right: 12,
-  zIndex: 1000,
-  maxWidth: 260,
-  background: "rgba(30,30,46,0.75)",
-  backdropFilter: "blur(6px)",
-  border: "1px solid rgba(69,71,90,0.6)",
-  borderRadius: 8,
-  padding: "10px 14px",
-  fontFamily: "sans-serif",
-  boxShadow: "0 2px 12px rgba(0,0,0,0.35)",
-};
-
-const layerInfoTitle: React.CSSProperties = {
-  fontSize: 12,
-  fontWeight: 700,
-  textTransform: "uppercase",
-  letterSpacing: "0.06em",
-  color: "#89b4fa",
-  marginBottom: 6,
-};
-
-const layerInfoBody: React.CSSProperties = {
-  fontSize: 12,
-  lineHeight: 1.55,
-  color: "rgba(205,214,244,0.85)",
-};
-
-const toolbar: React.CSSProperties = {
-  position: "relative",
-  marginTop: 10,
-  display: "flex",
-  gap: 8,
-  zIndex: 1000,
-};
-
-const mapBtn: React.CSSProperties = {
-  background: "#1e1e2e",
-  border: "1px solid #45475a",
-  borderRadius: 4,
-  color: "#cdd6f4",
-  cursor: "pointer",
-  padding: "6px 14px",
-  fontSize: 13,
-  fontWeight: 600,
-  fontFamily: "sans-serif",
-  boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
-};
-
-const mapBtnDraw: React.CSSProperties = {
-  ...mapBtn,
-  padding: "10px 20px",
-  fontSize: 15,
-};
-
-const mapBtnCancel: React.CSSProperties = {
-  background: "#f38ba8",
-  borderColor: "#f38ba8",
-  color: "#1e1e2e",
-};
-
-const mapBtnClear: React.CSSProperties = {
-  background: "#fab387",
-  borderColor: "#fab387",
-  color: "#1e1e2e",
-};
-
-const hintOverlay: React.CSSProperties = {
-  position: "absolute",
-  inset: 0,
-  background: "rgba(0,0,0,0.55)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  zIndex: 2000,
-};
-
-const hintBox: React.CSSProperties = {
-  background: "#1e1e2e",
-  border: "1px solid #45475a",
-  borderRadius: 8,
-  padding: "28px 32px",
-  maxWidth: 420,
-  color: "#cdd6f4",
-  fontFamily: "sans-serif",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
-};
-
-const hintTitle: React.CSSProperties = {
-  fontSize: 18,
-  fontWeight: 700,
-  marginBottom: 14,
-  color: "#89b4fa",
-};
-
-const hintBody: React.CSSProperties = {
-  fontSize: 14,
-  lineHeight: 1.6,
-  marginBottom: 12,
-  color: "#cdd6f4",
-};
-
-const hintBtn: React.CSSProperties = {
-  marginTop: 8,
-  background: "#a6e3a1",
-  border: "none",
-  borderRadius: 4,
-  color: "#1e1e2e",
-  cursor: "pointer",
-  padding: "10px 20px",
-  fontSize: 14,
-  fontWeight: 700,
-  width: "100%",
 };

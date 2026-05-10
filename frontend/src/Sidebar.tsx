@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import type { CSSProperties } from "react";
 import { WEATHER_CODE_MAP, WEATHER_FIELDS, defaultWeather, type WeatherParams } from "./config/weatherConfig";
 import { defaultRiskGridTime } from "./services/predictionsService";
 import { defaultFilters } from "./config/config";
+import "./Sidebar.css";
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => window.matchMedia("(max-width: 768px)").matches);
@@ -29,14 +29,14 @@ function AccidentsControls({
   setMinDate: (v: string) => void; setMaxDate: (v: string) => void;
 }) {
   return (
-    <div style={styles.section}>
-      <label style={styles.fieldLabel}>
+    <div className="sidebar__section">
+      <label className="sidebar__field-label">
         From
-        <input type="date" min="2020-01-01" value={minDate} onChange={(e) => setMinDate(e.target.value)} style={styles.textInput} />
+        <input type="date" min="2020-01-01" value={minDate} onChange={(e) => setMinDate(e.target.value)} className="sidebar__text-input" />
       </label>
-      <label style={styles.fieldLabel}>
+      <label className="sidebar__field-label">
         To
-        <input type="date" min="2020-01-01" value={maxDate} onChange={(e) => setMaxDate(e.target.value)} style={styles.textInput} />
+        <input type="date" min="2020-01-01" value={maxDate} onChange={(e) => setMaxDate(e.target.value)} className="sidebar__text-input" />
       </label>
     </div>
   );
@@ -58,20 +58,22 @@ function RiskGridControls({
   const setWeatherField = (key: keyof WeatherParams, value: number) =>
     setDraftWeather({ ...draftWeather, [key]: value });
 
+  const today = new Date().toISOString().split("T")[0];
+  console.log("Today:", today);
   return (
     <>
-      <div style={styles.section}>
-        <label style={styles.fieldLabel}>
+      <div className="sidebar__section">
+        <label className="sidebar__field-label">
           Date
-          <input type="date" min="2020-01-01" value={date} onChange={(e) => setDate(e.target.value)} style={styles.textInput} />
+          <input type="date" min={today} value={date} onChange={(e) => setDate(e.target.value)} className="sidebar__text-input" />
         </label>
-        <div style={styles.fieldLabel as CSSProperties}>
+        <div className="sidebar__field-label">
           Time window
-          <div style={styles.slotGrid}>
+          <div className="sidebar__slot-grid">
             {TIME_SLOTS.map((slot) => (
               <button
                 key={slot.hour}
-                style={{ ...styles.slotBtn, ...(hour === slot.hour ? styles.slotBtnActive : {}) }}
+                className={`sidebar__slot-btn${hour === slot.hour ? " sidebar__slot-btn--active" : ""}`}
                 onClick={() => setSlot(slot.hour)}
               >
                 {slot.label}
@@ -81,15 +83,15 @@ function RiskGridControls({
         </div>
       </div>
 
-      <div style={styles.sectionHeader}>Weather</div>
+      <div className="sidebar__section-header">Weather</div>
 
-      <div style={styles.section}>
-        <label style={styles.fieldLabel}>
+      <div className="sidebar__section">
+        <label className="sidebar__field-label">
           Condition
           <select
             value={draftWeather.weather_code}
             onChange={(e) => setWeatherField("weather_code", Number(e.target.value))}
-            style={styles.textInput}
+            className="sidebar__text-input"
           >
             {Object.entries(WEATHER_CODE_MAP).map(([code, label]) => (
               <option key={code} value={code}>{label}</option>
@@ -98,10 +100,10 @@ function RiskGridControls({
         </label>
 
         {WEATHER_FIELDS.map((f) => (
-          <label key={f.key} style={styles.fieldLabel}>
-            <span style={styles.fieldRow}>
+          <label key={f.key} className="sidebar__field-label">
+            <span className="sidebar__field-row">
               <span>{f.label}</span>
-              <span style={styles.unit}>{f.unit}</span>
+              <span className="sidebar__unit">{f.unit}</span>
             </span>
             <input
               type="number"
@@ -110,13 +112,13 @@ function RiskGridControls({
               step={f.step}
               value={draftWeather[f.key]}
               onChange={(e) => setWeatherField(f.key, parseFloat(e.target.value) || 0)}
-              style={styles.textInput}
+              className="sidebar__text-input"
             />
           </label>
         ))}
       </div>
 
-      <div style={styles.riskNote}>Color: yellow (low) → red (high risk)</div>
+      <div className="sidebar__risk-note">Color: yellow (low) → red (high risk)</div>
     </>
   );
 }
@@ -145,65 +147,42 @@ export default function Sidebar({ activeLayer, onLayerChange, onSubmitAccidents,
     }
   };
 
-  const wrapperStyle: CSSProperties = isMobile
-    ? {
-        position: "fixed",
-        zIndex: 9999,
-        bottom: 0,
-        left: 0,
-        right: 0,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "stretch",
-        transition: "transform 0.3s ease",
-        transform: collapsed ? "translateY(calc(100% - 48px))" : "translateY(0)",
-      }
-    : {
-        ...styles.wrapper,
-        transform: collapsed ? "translateX(-240px)" : "translateX(0)",
-      };
+  const wrapperClass = [
+    "sidebar-wrapper",
+    isMobile ? "sidebar-wrapper--mobile" : "",
+    collapsed ? "sidebar-wrapper--collapsed" : "",
+  ].filter(Boolean).join(" ");
 
-  const sidebarStyle: CSSProperties = isMobile
-    ? {
-        ...styles.sidebar,
-        width: "100%",
-        maxHeight: "55vh",
-        borderRadius: "12px 12px 0 0",
-        borderTop: "2px solid #45475a",
-      }
-    : styles.sidebar;
+  const sidebarClass = ["sidebar", isMobile ? "sidebar--mobile" : ""].filter(Boolean).join(" ");
 
   return (
-    <div style={wrapperStyle}>
-      <aside style={sidebarStyle}>
-        <div style={styles.scrollableContent}>
+    <div className={wrapperClass}>
+      <aside className={sidebarClass}>
+        <div className="sidebar__scrollable-content">
           <div
-            style={{
-              ...styles.header,
-              ...(isMobile ? { cursor: "pointer", userSelect: "none" } : {}),
-            }}
+            className={`sidebar__header${isMobile ? " sidebar__header--mobile" : ""}`}
             onClick={isMobile ? () => setCollapsed((c) => !c) : undefined}
           >
             Layers
             {isMobile ? (
-              <span style={{ ...styles.collapseBtn, fontSize: 14, pointerEvents: "none" }}>
+              <span className="sidebar__collapse-btn sidebar__collapse-btn--indicator">
                 {collapsed ? "▲" : "▼"}
               </span>
             ) : (
-              <button style={styles.collapseBtn} onClick={() => setCollapsed(true)} title="Hide sidebar">◀</button>
+              <button className="sidebar__collapse-btn" onClick={() => setCollapsed(true)} title="Hide sidebar">◀</button>
             )}
           </div>
 
-          <div style={styles.layerSection}>
+          <div className="sidebar__layer-section">
             <button
-              style={{ ...styles.layerBtn, ...(activeLayer === "accidents" ? styles.layerBtnActive : {}) }}
+              className={`sidebar__layer-btn${activeLayer === "accidents" ? " sidebar__layer-btn--active" : ""}`}
               onClick={() => onLayerChange("accidents")}
               title="Shows recorded road accidents as clusters on the map. Click a cluster to zoom in or view individual accident details."
             >
               Road Accidents
             </button>
             <button
-              style={{ ...styles.layerBtn, ...(activeLayer === "riskGrid" ? styles.layerBtnActive : {}) }}
+              className={`sidebar__layer-btn${activeLayer === "riskGrid" ? " sidebar__layer-btn--active" : ""}`}
               onClick={() => onLayerChange("riskGrid")}
               title="Shows a risk heatmap predicted by an ML model. Configure date, time window, and weather conditions to see where accidents are most likely to occur. Optinally you can Draw area on the map to filter the risk grid to that area."
             >
@@ -219,13 +198,13 @@ export default function Sidebar({ activeLayer, onLayerChange, onSubmitAccidents,
           )}
         </div>
 
-        <div style={styles.loadBtnFooter}>
-          <button style={styles.loadBtn} onClick={handleLoad}>Load</button>
+        <div className="sidebar__load-btn-footer">
+          <button className="sidebar__load-btn" onClick={handleLoad}>Load</button>
         </div>
       </aside>
       {!isMobile && (
         <button
-          style={styles.tabBtn}
+          className="sidebar__tab-btn"
           onClick={() => setCollapsed((c) => !c)}
           title={collapsed ? "Show sidebar" : "Hide sidebar"}
         >
@@ -235,181 +214,3 @@ export default function Sidebar({ activeLayer, onLayerChange, onSubmitAccidents,
     </div>
   );
 }
-
-const styles: Record<string, CSSProperties> = {
-  wrapper: {
-    position: "absolute",
-    zIndex: 9999,
-    top: 0,
-    left: 0,
-    height: "100%",
-    display: "flex",
-    alignItems: "stretch",
-    transition: "transform 0.3s ease",
-  },
-  sidebar: {
-    width: 240,
-    flexShrink: 0,
-    background: "#1e1e2e",
-    color: "#cdd6f4",
-    display: "flex",
-    flexDirection: "column",
-    fontFamily: "sans-serif",
-    fontSize: 14,
-  },
-  scrollableContent: {
-    flex: 1,
-    overflowY: "auto",
-  },
-  loadBtnFooter: {
-    padding: "12px 16px",
-    borderTop: "1px solid #313244",
-    background: "#1e1e2e",
-    flexShrink: 0,
-  },
-  header: {
-    padding: "14px 16px",
-    fontWeight: 700,
-    fontSize: 16,
-    borderBottom: "1px solid #313244",
-    letterSpacing: "0.03em",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    minHeight: 48,
-    boxSizing: "border-box",
-  },
-  collapseBtn: {
-    background: "none",
-    border: "none",
-    color: "#cdd6f4",
-    cursor: "pointer",
-    fontSize: 12,
-    opacity: 0.6,
-    padding: "2px 4px",
-    lineHeight: 1,
-  },
-  tabBtn: {
-    alignSelf: "center",
-    background: "#1e1e2e",
-    border: "1px solid #313244",
-    borderLeft: "none",
-    color: "#cdd6f4",
-    cursor: "pointer",
-    width: 20,
-    height: 48,
-    borderRadius: "0 6px 6px 0",
-    fontSize: 10,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  layerSection: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 4,
-    padding: "12px 16px",
-    borderBottom: "1px solid #313244",
-  },
-  layerBtn: {
-    background: "#313244",
-    border: "1px solid #45475a",
-    borderRadius: 4,
-    color: "#a6adc8",
-    cursor: "pointer",
-    padding: "10px 12px",
-    fontSize: 13,
-    fontWeight: 600,
-    textAlign: "left",
-    letterSpacing: "0.03em",
-  },
-  layerBtnActive: {
-    background: "#89b4fa",
-    border: "1px solid #89b4fa",
-    color: "#1e1e2e",
-  },
-  sectionHeader: {
-    padding: "8px 16px 4px",
-    fontSize: 11,
-    textTransform: "uppercase",
-    letterSpacing: "0.06em",
-    color: "#6c7086",
-    borderTop: "1px solid #313244",
-  },
-  section: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-    padding: "10px 16px",
-  },
-  fieldLabel: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 3,
-    fontSize: 11,
-    textTransform: "uppercase",
-    letterSpacing: "0.06em",
-    color: "#a6adc8",
-  },
-  fieldRow: {
-    display: "flex",
-    justifyContent: "space-between",
-  },
-  unit: {
-    color: "#6c7086",
-    fontWeight: 400,
-    textTransform: "none",
-    letterSpacing: 0,
-  },
-  textInput: {
-    background: "#313244",
-    border: "1px solid #45475a",
-    borderRadius: 4,
-    color: "#cdd6f4",
-    padding: "6px 8px",
-    fontSize: 13,
-    colorScheme: "dark",
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  slotGrid: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 4,
-    marginTop: 4,
-  },
-  slotBtn: {
-    background: "#313244",
-    border: "1px solid #45475a",
-    borderRadius: 4,
-    color: "#a6adc8",
-    cursor: "pointer",
-    padding: "8px 10px",
-    fontSize: 12,
-    textAlign: "left",
-  },
-  slotBtnActive: {
-    background: "#89b4fa",
-    border: "1px solid #89b4fa",
-    color: "#1e1e2e",
-    fontWeight: 700,
-  },
-  loadBtn: {
-    background: "#a6e3a1",
-    border: "none",
-    borderRadius: 4,
-    color: "#1e1e2e",
-    cursor: "pointer",
-    padding: "10px 12px",
-    fontSize: 13,
-    fontWeight: 700,
-    width: "100%",
-  },
-  riskNote: {
-    fontSize: 11,
-    color: "#6c7086",
-    padding: "4px 16px 12px",
-    fontStyle: "italic",
-  },
-};

@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import { defaultFilters } from "./config/config";
 import { defaultRiskGridTime } from "./services/predictionsService";
 import { defaultWeather, type WeatherParams } from "./config/weatherConfig";
+import "./main.css";
 
 function App() {
   const [activeLayer, setActiveLayer] = useState<"accidents" | "riskGrid">("accidents");
@@ -24,14 +25,14 @@ function App() {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    <div className="app">
       <Sidebar
         activeLayer={activeLayer}
         onLayerChange={setActiveLayer}
         onSubmitAccidents={handleSubmitAccidents}
         onSubmitRiskGrid={handleSubmitRiskGrid}
       />
-      <div style={{ flex: 1 }}>
+      <div className="app__map">
         <MapView
           minDate={minDate}
           maxDate={maxDate}

@@ -1,0 +1,95 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.list-modal {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: 8px;
+  width: 360px;
+  max-width: 90vw;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  font-family: sans-serif;
+  font-size: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid #313244;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.modal__close-btn {
+  background: none;
+  border: none;
+  color: #cdd6f4;
+  cursor: pointer;
+  font-size: 16px;
+  opacity: 0.7;
+  line-height: 1;
+}
+
+.list-modal__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.list-modal__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #313244;
+  gap: 12px;
+}
+
+.list-modal__date {
+  flex: 1;
+}
+
+.list-modal__badge {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid;
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+
+.list-modal__badge--fatal {
+  color: #f38ba8;
+  border-color: #f38ba8;
+}
+
+.list-modal__badge--serious {
+  color: #fab387;
+  border-color: #fab387;
+}
+
+.list-modal__badge--slight {
+  color: #a6e3a1;
+  border-color: #a6e3a1;
+}
+
+.list-modal__badge--default {
+  color: #cdd6f4;
+  border-color: #cdd6f4;
+}

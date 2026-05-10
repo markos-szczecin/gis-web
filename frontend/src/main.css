@@ -1,0 +1,9 @@
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app__map {
+  flex: 1;
+}
