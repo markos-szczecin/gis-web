@@ -2,6 +2,7 @@ from datetime import date
 from typing import Optional
 
 from app.repositories.accidents_repository import AccidentsRepository
+from app.translations import DESCRIPTION_MAP, PLACE_MAP, ROAD_TYPE_MAP, SEVERITY_MAP, translate
 
 _repository = AccidentsRepository()
 
@@ -25,7 +26,7 @@ def get_base_accidents_geojson(
                 "id": accident.id,
                 "event_date": accident.event_date.isoformat() if accident.event_date else None,
                 "event_time": accident.event_time if accident.event_time else None,
-                "severity": accident.severity,
+                "severity": translate(SEVERITY_MAP, accident.severity),
             },
         }
         for accident in accidents
@@ -44,13 +45,13 @@ def get_accident_details(accident_id: str) -> dict:
         "id": accident.id,
         "event_date": accident.event_date.isoformat(),
         "event_time": accident.event_time.isoformat(),
-        "description": accident.description,
+        "description": translate(DESCRIPTION_MAP, accident.description),
         "traffic_light": accident.traffic_light,
-        "place": accident.place,
+        "place": translate(PLACE_MAP, accident.place),
         "crossroad": accident.crossroad,
         "urban": accident.urban,
-        "road_type": accident.road_type,
-        "severity": accident.severity,
+        "road_type": translate(ROAD_TYPE_MAP, accident.road_type),
+        "severity": translate(SEVERITY_MAP, accident.severity),
         "geometry": accident.geometry,
         "day_night": accident.day_night
     }
