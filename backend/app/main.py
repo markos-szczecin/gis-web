@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import accidents
+from app.routers import predictions
 import os
 
 app = FastAPI(title="Geo Dashboard API")
 
 app.include_router(accidents.router)
+app.include_router(predictions.router)
 
 app.add_middleware(
     CORSMiddleware,
