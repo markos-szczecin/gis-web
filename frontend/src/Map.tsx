@@ -174,6 +174,11 @@ export default function MapView({ minDate, maxDate, activeLayer, riskGridTime, w
     <div style={{ position: "relative", width: "100%", height: "100vh" }}>
       <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
 
+      <div style={layerInfo}>
+        <div style={layerInfoTitle}>{LAYER_LABELS[activeLayer]}</div>
+        <div style={layerInfoBody}>{LAYER_DESCRIPTIONS[activeLayer]}</div>
+      </div>
+
       {activeLayer === "riskGrid" && (
         <div style={toolbar}>
           {!drawActive && !hasPolygon && (
@@ -222,9 +227,49 @@ export default function MapView({ minDate, maxDate, activeLayer, riskGridTime, w
   );
 }
 
-const toolbar: React.CSSProperties = {
+const LAYER_LABELS: Record<string, string> = {
+  accidents: "Road Accidents",
+  riskGrid: "Accident Risk Predictor",
+};
+
+const LAYER_DESCRIPTIONS: Record<string, string> = {
+  accidents: "Displays recorded road accidents as clusters. Click a cluster to zoom in or view individual accident details.",
+  riskGrid: "ML-powered risk heatmap. Set the date, time window, and weather conditions, then load to see where accidents are most likely to occur. Use Draw area to focus the heatmap on a specific zone.",
+};
+
+const layerInfo: React.CSSProperties = {
   position: "absolute",
   top: 12,
+  right: 12,
+  zIndex: 1000,
+  maxWidth: 260,
+  background: "rgba(30,30,46,0.75)",
+  backdropFilter: "blur(6px)",
+  border: "1px solid rgba(69,71,90,0.6)",
+  borderRadius: 8,
+  padding: "10px 14px",
+  fontFamily: "sans-serif",
+  boxShadow: "0 2px 12px rgba(0,0,0,0.35)",
+};
+
+const layerInfoTitle: React.CSSProperties = {
+  fontSize: 12,
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.06em",
+  color: "#89b4fa",
+  marginBottom: 6,
+};
+
+const layerInfoBody: React.CSSProperties = {
+  fontSize: 12,
+  lineHeight: 1.55,
+  color: "rgba(205,214,244,0.85)",
+};
+
+const toolbar: React.CSSProperties = {
+  position: "absolute",
+  top: 160,
   right: 12,
   display: "flex",
   gap: 8,

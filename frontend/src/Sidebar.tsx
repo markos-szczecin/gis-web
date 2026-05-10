@@ -131,14 +131,16 @@ export default function Sidebar({ activeLayer, onLayerChange, onSubmitAccidents,
           <button
             style={{ ...styles.layerBtn, ...(activeLayer === "accidents" ? styles.layerBtnActive : {}) }}
             onClick={() => onLayerChange("accidents")}
+            title="Shows recorded road accidents as clusters on the map. Click a cluster to zoom in or view individual accident details."
           >
             Road Accidents
           </button>
           <button
             style={{ ...styles.layerBtn, ...(activeLayer === "riskGrid" ? styles.layerBtnActive : {}) }}
             onClick={() => onLayerChange("riskGrid")}
+            title="Shows a risk heatmap predicted by an ML model. Configure date, time window, and weather conditions to see where accidents are most likely to occur. Optinally you can Draw area on the map to filter the risk grid to that area."
           >
-            Accident Risk
+            Accident Risk Predictor
           </button>
         </div>
 
