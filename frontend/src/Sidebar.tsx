@@ -1,8 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { CSSProperties } from "react";
 import { WEATHER_CODE_MAP, WEATHER_FIELDS, defaultWeather, type WeatherParams } from "./config/weatherConfig";
 import { defaultRiskGridTime } from "./services/predictionsService";
 import { defaultFilters } from "./config/config";
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia("(max-width: 768px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return isMobile;
+}
 
 const TIME_SLOTS = [
   { label: "00:00 – 06:00", hour: 0 },
@@ -11,10 +22,12 @@ const TIME_SLOTS = [
   { label: "18:00 – 00:00", hour: 18 },
 ];
 
-function AccidentsControls({ onSubmit }: { onSubmit: (minDate: string, maxDate: string) => void }) {
-  const [minDate, setMinDate] = useState(defaultFilters.minDate);
-  const [maxDate, setMaxDate] = useState(defaultFilters.maxDate);
-
+function AccidentsControls({
+  minDate, maxDate, setMinDate, setMaxDate,
+}: {
+  minDate: string; maxDate: string;
+  setMinDate: (v: string) => void; setMaxDate: (v: string) => void;
+}) {
   return (
     <div style={styles.section}>
       <label style={styles.fieldLabel}>
@@ -25,15 +38,16 @@ function AccidentsControls({ onSubmit }: { onSubmit: (minDate: string, maxDate: 
         To
         <input type="date" min="2020-01-01" value={maxDate} onChange={(e) => setMaxDate(e.target.value)} style={styles.textInput} />
       </label>
-      <button style={styles.loadBtn} onClick={() => onSubmit(minDate, maxDate)}>Load</button>
     </div>
   );
 }
 
-function RiskGridControls({ onSubmit }: { onSubmit: (time: string, weather: WeatherParams) => void }) {
-  const [draftTime, setDraftTime] = useState(defaultRiskGridTime());
-  const [draftWeather, setDraftWeather] = useState<WeatherParams>(defaultWeather);
-
+function RiskGridControls({
+  draftTime, draftWeather, setDraftTime, setDraftWeather,
+}: {
+  draftTime: string; draftWeather: WeatherParams;
+  setDraftTime: (v: string) => void; setDraftWeather: (v: WeatherParams) => void;
+}) {
   const date = draftTime.slice(0, 10);
   const hour = parseInt(draftTime.slice(11, 13), 10);
 
@@ -42,7 +56,7 @@ function RiskGridControls({ onSubmit }: { onSubmit: (time: string, weather: Weat
   const setSlot = (h: number) =>
     setDraftTime(`${date}T${String(h).padStart(2, "0")}:00`);
   const setWeatherField = (key: keyof WeatherParams, value: number) =>
-    setDraftWeather((w) => ({ ...w, [key]: value }));
+    setDraftWeather({ ...draftWeather, [key]: value });
 
   return (
     <>
@@ -100,8 +114,6 @@ function RiskGridControls({ onSubmit }: { onSubmit: (time: string, weather: Weat
             />
           </label>
         ))}
-
-        <button style={styles.loadBtn} onClick={() => onSubmit(draftTime, draftWeather)}>Load</button>
       </div>
 
       <div style={styles.riskNote}>Color: yellow (low) → red (high risk)</div>
@@ -117,43 +129,109 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeLayer, onLayerChange, onSubmitAccidents, onSubmitRiskGrid }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const isMobile = useIsMobile();
+  const [collapsed, setCollapsed] = useState(() => window.matchMedia("(max-width: 768px)").matches);
+
+  const [minDate, setMinDate] = useState(defaultFilters.minDate);
+  const [maxDate, setMaxDate] = useState(defaultFilters.maxDate);
+  const [draftTime, setDraftTime] = useState(defaultRiskGridTime());
+  const [draftWeather, setDraftWeather] = useState<WeatherParams>(defaultWeather);
+
+  const handleLoad = () => {
+    if (activeLayer === "accidents") {
+      onSubmitAccidents(minDate, maxDate);
+    } else {
+      onSubmitRiskGrid(draftTime, draftWeather);
+    }
+  };
+
+  const wrapperStyle: CSSProperties = isMobile
+    ? {
+        position: "fixed",
+        zIndex: 9999,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "stretch",
+        transition: "transform 0.3s ease",
+        transform: collapsed ? "translateY(calc(100% - 48px))" : "translateY(0)",
+      }
+    : {
+        ...styles.wrapper,
+        transform: collapsed ? "translateX(-240px)" : "translateX(0)",
+      };
+
+  const sidebarStyle: CSSProperties = isMobile
+    ? {
+        ...styles.sidebar,
+        width: "100%",
+        maxHeight: "55vh",
+        borderRadius: "12px 12px 0 0",
+        borderTop: "2px solid #45475a",
+      }
+    : styles.sidebar;
 
   return (
-    <div style={{ ...styles.wrapper, transform: collapsed ? "translateX(-240px)" : "translateX(0)" }}>
-      <aside style={styles.sidebar}>
-        <div style={styles.header}>
-          Layers
-          <button style={styles.collapseBtn} onClick={() => setCollapsed(true)} title="Hide sidebar">◀</button>
+    <div style={wrapperStyle}>
+      <aside style={sidebarStyle}>
+        <div style={styles.scrollableContent}>
+          <div
+            style={{
+              ...styles.header,
+              ...(isMobile ? { cursor: "pointer", userSelect: "none" } : {}),
+            }}
+            onClick={isMobile ? () => setCollapsed((c) => !c) : undefined}
+          >
+            Layers
+            {isMobile ? (
+              <span style={{ ...styles.collapseBtn, fontSize: 14, pointerEvents: "none" }}>
+                {collapsed ? "▲" : "▼"}
+              </span>
+            ) : (
+              <button style={styles.collapseBtn} onClick={() => setCollapsed(true)} title="Hide sidebar">◀</button>
+            )}
+          </div>
+
+          <div style={styles.layerSection}>
+            <button
+              style={{ ...styles.layerBtn, ...(activeLayer === "accidents" ? styles.layerBtnActive : {}) }}
+              onClick={() => onLayerChange("accidents")}
+              title="Shows recorded road accidents as clusters on the map. Click a cluster to zoom in or view individual accident details."
+            >
+              Road Accidents
+            </button>
+            <button
+              style={{ ...styles.layerBtn, ...(activeLayer === "riskGrid" ? styles.layerBtnActive : {}) }}
+              onClick={() => onLayerChange("riskGrid")}
+              title="Shows a risk heatmap predicted by an ML model. Configure date, time window, and weather conditions to see where accidents are most likely to occur. Optinally you can Draw area on the map to filter the risk grid to that area."
+            >
+              Accident Risk Predictor
+            </button>
+          </div>
+
+          {activeLayer === "accidents" && (
+            <AccidentsControls minDate={minDate} maxDate={maxDate} setMinDate={setMinDate} setMaxDate={setMaxDate} />
+          )}
+          {activeLayer === "riskGrid" && (
+            <RiskGridControls draftTime={draftTime} draftWeather={draftWeather} setDraftTime={setDraftTime} setDraftWeather={setDraftWeather} />
+          )}
         </div>
 
-        <div style={styles.layerSection}>
-          <button
-            style={{ ...styles.layerBtn, ...(activeLayer === "accidents" ? styles.layerBtnActive : {}) }}
-            onClick={() => onLayerChange("accidents")}
-            title="Shows recorded road accidents as clusters on the map. Click a cluster to zoom in or view individual accident details."
-          >
-            Road Accidents
-          </button>
-          <button
-            style={{ ...styles.layerBtn, ...(activeLayer === "riskGrid" ? styles.layerBtnActive : {}) }}
-            onClick={() => onLayerChange("riskGrid")}
-            title="Shows a risk heatmap predicted by an ML model. Configure date, time window, and weather conditions to see where accidents are most likely to occur. Optinally you can Draw area on the map to filter the risk grid to that area."
-          >
-            Accident Risk Predictor
-          </button>
+        <div style={styles.loadBtnFooter}>
+          <button style={styles.loadBtn} onClick={handleLoad}>Load</button>
         </div>
-
-        {activeLayer === "accidents" && <AccidentsControls onSubmit={onSubmitAccidents} />}
-        {activeLayer === "riskGrid" && <RiskGridControls onSubmit={onSubmitRiskGrid} />}
       </aside>
-      <button
-        style={styles.tabBtn}
-        onClick={() => setCollapsed((c) => !c)}
-        title={collapsed ? "Show sidebar" : "Hide sidebar"}
-      >
-        {collapsed ? "▶" : "◀"}
-      </button>
+      {!isMobile && (
+        <button
+          style={styles.tabBtn}
+          onClick={() => setCollapsed((c) => !c)}
+          title={collapsed ? "Show sidebar" : "Hide sidebar"}
+        >
+          {collapsed ? "▶" : "◀"}
+        </button>
+      )}
     </div>
   );
 }
@@ -176,12 +254,21 @@ const styles: Record<string, CSSProperties> = {
     color: "#cdd6f4",
     display: "flex",
     flexDirection: "column",
-    overflowY: "auto",
     fontFamily: "sans-serif",
     fontSize: 14,
   },
+  scrollableContent: {
+    flex: 1,
+    overflowY: "auto",
+  },
+  loadBtnFooter: {
+    padding: "12px 16px",
+    borderTop: "1px solid #313244",
+    background: "#1e1e2e",
+    flexShrink: 0,
+  },
   header: {
-    padding: "16px 16px 12px",
+    padding: "14px 16px",
     fontWeight: 700,
     fontSize: 16,
     borderBottom: "1px solid #313244",
@@ -189,6 +276,8 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    minHeight: 48,
+    boxSizing: "border-box",
   },
   collapseBtn: {
     background: "none",
@@ -229,7 +318,7 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: 4,
     color: "#a6adc8",
     cursor: "pointer",
-    padding: "8px 12px",
+    padding: "10px 12px",
     fontSize: 13,
     fontWeight: 600,
     textAlign: "left",
@@ -278,7 +367,7 @@ const styles: Record<string, CSSProperties> = {
     border: "1px solid #45475a",
     borderRadius: 4,
     color: "#cdd6f4",
-    padding: "4px 8px",
+    padding: "6px 8px",
     fontSize: 13,
     colorScheme: "dark",
     width: "100%",
@@ -296,7 +385,7 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: 4,
     color: "#a6adc8",
     cursor: "pointer",
-    padding: "6px 10px",
+    padding: "8px 10px",
     fontSize: 12,
     textAlign: "left",
   },
@@ -312,10 +401,10 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: 4,
     color: "#1e1e2e",
     cursor: "pointer",
-    padding: "8px 12px",
+    padding: "10px 12px",
     fontSize: 13,
     fontWeight: 700,
-    marginTop: 4,
+    width: "100%",
   },
   riskNote: {
     fontSize: 11,

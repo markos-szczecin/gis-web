@@ -17,6 +17,17 @@ import { type WeatherParams } from "./config/weatherConfig";
 import AccidentDetailsModal from "./components/AccidentDetailsModal";
 import AccidentListModal from "./components/AccidentListModal";
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia("(max-width: 768px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return isMobile;
+}
+
 interface Props {
   minDate: string;
   maxDate: string;
@@ -36,6 +47,7 @@ const selectionStyle = new Style({
 });
 
 export default function MapView({ minDate, maxDate, activeLayer, riskGridTime, weatherParams }: Props) {
+  const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
   const loadAccidentsRef = useRef<((minDate: string, maxDate: string) => void) | null>(null);
   const loadRiskGridRef = useRef<((time: string, weather: WeatherParams) => Promise<void>) | null>(null);
@@ -174,11 +186,9 @@ export default function MapView({ minDate, maxDate, activeLayer, riskGridTime, w
     <div style={{ position: "relative", width: "100%", height: "100vh" }}>
       <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
 
-      <div style={layerInfo}>
+      <div style={{ ...layerInfo, ...(isMobile ? { maxWidth: 160, top: 8, right: 8, padding: "8px 10px" } : {}) }}>
         <div style={layerInfoTitle}>{LAYER_LABELS[activeLayer]}</div>
         <div style={layerInfoBody}>{LAYER_DESCRIPTIONS[activeLayer]}</div>
-      </div>
-
       {activeLayer === "riskGrid" && (
         <div style={toolbar}>
           {!drawActive && !hasPolygon && (
@@ -195,10 +205,11 @@ export default function MapView({ minDate, maxDate, activeLayer, riskGridTime, w
           )}
         </div>
       )}
+      </div>
 
       {showDrawHint && (
         <div style={hintOverlay}>
-          <div style={hintBox}>
+          <div style={{ ...hintBox, ...(isMobile ? { maxWidth: "calc(100vw - 32px)", padding: "20px 16px" } : {}) }}>
             <div style={hintTitle}>Draw Area Filter</div>
             <p style={hintBody}>
               Draw a polygon directly on the map to focus the risk heatmap on a specific area.
@@ -268,9 +279,8 @@ const layerInfoBody: React.CSSProperties = {
 };
 
 const toolbar: React.CSSProperties = {
-  position: "absolute",
-  top: 160,
-  right: 12,
+  position: "relative",
+  marginTop: 10,
   display: "flex",
   gap: 8,
   zIndex: 1000,
