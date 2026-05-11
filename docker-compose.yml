@@ -10,6 +10,7 @@ services:
       - frontend_node_modules:/app/node_modules
     environment:
       - VITE_API_URL=/zs-risk-accident/api
+      - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS=non-artificialintelligence.com
     depends_on:
       - backend
     command: npm run dev -- --host 0.0.0.0
@@ -25,8 +26,10 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   db:
@@ -40,6 +43,11 @@ services:
     volumes:
       - postgis_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   redis:
     image: redis:7-alpine
