@@ -47,6 +47,8 @@
 .sidebar__scrollable-content {
   flex: 1;
   overflow-y: auto;
+  scrollbar-color: #605c5c #1E1E2E;
+  scrollbar-width: thin;
 }
 
 .sidebar__load-btn-footer {
