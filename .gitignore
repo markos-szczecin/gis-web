@@ -10,3 +10,4 @@ backend/tmp/
 .vscode/
 /backend/data/
 **/.cache*
+**/docker-compose-local.yml
