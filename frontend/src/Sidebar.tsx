@@ -189,9 +189,14 @@ export default function Sidebar({ activeLayer, onLayerChange, onSubmitAccidents,
               Accident Risk Predictor
             </button>
             <a
-            className="sidebar__eda-link"
-             href="/zs-risk-accident/eda_accidents.html" target="_blank" rel="noopener noreferrer" className="sidebar__eda-link">
+              className="sidebar__eda-link"
+              href="/zs-risk-accident/eda_accidents.html" target="_blank" rel="noopener noreferrer">
               EDA of Accidents Dataset
+            </a>
+            <a
+              className="sidebar__eda-link"
+              href="/zs-risk-accident/accident_risk_predictor_v4_en.html" target="_blank" rel="noopener noreferrer">
+              ML model details
             </a>
           </div>
 
